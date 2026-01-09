@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mass Inviter | Invitador Masivo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --bg-card: #15151f;
+            --telegram-blue: #0088cc;
+            --telegram-light: #29b6f6;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #7c3aed;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: #27272a;
+            --glow-telegram: 0 0 30px rgba(0, 136, 204, 0.3);
+            --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 136, 204, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.03) 0%, transparent 70%);
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background-image: 
+                linear-gradient(rgba(0, 136, 204, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 136, 204, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--telegram-blue), var(--accent-cyan));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--glow-telegram);
+        }
+
+        .logo-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--text-primary), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Main Container */
+        .main-container {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            min-height: calc(100vh - 100px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 136, 204, 0.3);
+            box-shadow: var(--glow-cyan);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(0, 136, 204, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--telegram-light);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--telegram-blue);
+            box-shadow: 0 0 0 3px rgba(0, 136, 204, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--telegram-blue), var(--accent-cyan));
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 136, 204, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--telegram-blue);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--accent-green), #059669);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-red), #dc2626);
+            color: white;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        /* File Upload */
+        .file-upload {
+            position: relative;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+        }
+
+        .file-upload:hover {
+            border-color: var(--telegram-blue);
+            background: rgba(0, 136, 204, 0.05);
+        }
+
+        .file-upload.dragover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .file-upload input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            background: rgba(0, 136, 204, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-upload-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--telegram-light);
+        }
+
+        .file-upload-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .file-upload-text strong {
+            color: var(--accent-cyan);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            padding: 0.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--telegram-blue), var(--accent-cyan));
+            color: white;
+        }
+
+        /* Contacts Table */
+        .table-container {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+        }
+
+        .table-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .table-title h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            background: rgba(0, 136, 204, 0.1);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .table-scroll {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            z-index: 5;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        td {
+            font-size: 0.875rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        tr:hover {
+            background: rgba(0, 136, 204, 0.03);
+        }
+
+        .checkbox-cell {
+            width: 50px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--telegram-blue);
+            cursor: pointer;
+        }
+
+        /* Status Badges */
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent-orange);
+        }
+
+        .status-sent {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+        }
+
+        .status-failed {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--accent-red);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Action Buttons in Table */
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--telegram-blue);
+            color: white;
+        }
+
+        .action-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: var(--text-muted);
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 1rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .progress-label {
+            color: var(--text-secondary);
+        }
+
+        .progress-value {
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--telegram-blue), var(--accent-cyan));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast-success {
+            border-color: var(--accent-green);
+        }
+
+        .toast-error {
+            border-color: var(--accent-red);
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-success .toast-icon {
+            stroke: var(--accent-green);
+        }
+
+        .toast-error .toast-icon {
+            stroke: var(--accent-red);
+        }
+
+        .toast-message {
+            font-size: 0.875rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow: auto;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .header-stats {
+                display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .main-container {
+                padding: 1rem;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                flex: 1 1 45%;
+            }
+
+            th, td {
+                padding: 0.75rem 1rem;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Preview Message */
+        .preview-message {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-left: 3px solid var(--telegram-blue);
+        }
+
+        .preview-message p {
+            font-size: 0.875rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .variable-tag {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-cyan);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        /* Sending Animation */
+        .sending-animation {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sending-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--telegram-blue);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .sending-dot:nth-child(1) { animation-delay: -0.32s; }
+        .sending-dot:nth-child(2) { animation-delay: -0.16s; }
+        .sending-dot:nth-child(3) { animation-delay: 0; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.442-.752-.244-1.349-.374-1.297-.789.027-.216.324-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.141.121.099.154.232.17.325.015.093.034.306.019.472z"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>Telegram Inviter</h1>
+                    <span>v2.0 • Mass Invitation Tool</span>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalContacts">0</div>
+                    <div class="stat-label">Contactos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="sentCount">0</div>
+                    <div class="stat-label">Enviados</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="pendingCount">0</div>
+                    <div class="stat-label">Pendientes</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Group Configuration -->
+            <div class="card slide-up">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <h2 class="card-title">Configuración del Grupo</h2>
+                </div>
+                <div class="form-group">
+                    <label for="groupName">Nombre del Grupo</label>
+                    <input type="text" id="groupName" placeholder="Ej: Comunidad Premium">
+                </div>
+                <div class="form-group">
+                    <label for="groupLink">Enlace de Invitación</label>
+                    <input type="url" id="groupLink" placeholder="https://t.me/+xxxxxx o @username">
+                </div>
+                <div class="form-group">
+                    <label for="groupDescription">Descripción (opcional)</label>
+                    <textarea id="groupDescription" placeholder="Breve descripción del grupo..."></textarea>
+                </div>
+            </div>
+
+            <!-- Message Template -->
+            <div class="card slide-up" style="animation-delay: 0.1s;">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                        </svg>
+                    </div>
+                    <h2 class="card-title">Plantilla del Mensaje</h2>
+                </div>
+                <div class="form-group">
+                    <label>Variables disponibles:</label>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                        <span class="variable-tag">{nombre}</span>
+                        <span class="variable-tag">{grupo}</span>
+                        <span class="variable-tag">{enlace}</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="messageTemplate">Mensaje de Invitación</label>
+                    <textarea id="messageTemplate" rows="5">¡Hola {nombre}! 👋
+
+Te invito a unirte a nuestro grupo de Telegram "{grupo}".
+
+👉 {enlace}
+
+¡Te esperamos!</textarea>
+                </div>
+                <div class="preview-message">
+                    <p id="messagePreview">¡Hola Juan! 👋
+
+Te invito a unirte a nuestro grupo de Telegram "Comunidad Premium".
+
+👉 https://t.me/+xxxxx
+
+¡Te esperamos!</p>
+                </div>
+            </div>
+
+            <!-- Upload Contacts -->
+            <div class="card slide-up" style="animation-delay: 0.2s;">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                    <h2 class="card-title">Cargar Contactos</h2>
+                </div>
+                <div class="file-upload" id="fileUpload">
+                    <input type="file" id="csvFile" accept=".csv,.txt">
+                    <div class="file-upload-icon">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                    </div>
+                    <div class="file-upload-text">
+                        <strong>Arrastra un archivo CSV</strong><br>
+                        o haz clic para seleccionar
+                    </div>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem;">
+                    Formato: nombre,telefono (uno por línea)
+                </p>
+                <div class="btn-group" style="margin-top: 1rem;">
+                    <button class="btn btn-secondary" onclick="addManualContact()">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18" height="18">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Añadir Manual
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadTemplate()">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18" height="18">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Plantilla
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('contacts')">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    Contactos
+                </button>
+                <button class="tab" onclick="switchTab('whatsapp')">
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    Enviar por WhatsApp
+                </button>
+                <button class="tab" onclick="switchTab('telegram')">
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.442-.752-.244-1.349-.374-1.297-.789.027-.216.324-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.141.121.099.154.232.17.325.015.093.034.306.019.472z"/>
+                    </svg>
+                    Compartir Enlace
+                </button>
+                <button class="tab" onclick="switchTab('stats')">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    Estadísticas
+                </button>
+            </div>
+
+            <!-- Contacts Tab -->
+            <div id="contactsTab" class="table-container fade-in">
+                <div class="table-header">
+                    <div class="table-title">
+                        <h3>Lista de Contactos</h3>
+                        <span class="badge" id="contactsBadge">0 contactos</span>
+                    </div>
+                    <div class="table-actions">
+                        <button class="btn btn-secondary" onclick="selectAll()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18" height="18">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Seleccionar Todo
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteSelected()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18" height="18">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Eliminar
+                        </button>
+                        <button class="btn btn-primary" onclick="exportContacts()">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18" height="18">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            </svg>
+                            Exportar
+                        </button>
+                    </div>
+                </div>
+                <div class="table-scroll">
+                    <table id="contactsTable">
+                        <thead>
+                            <tr>
+                                <th class="checkbox-cell">
+                                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                                </th>
+                                <th>Nombre</th>
+                                <th>Teléfono</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contactsBody">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-state-icon">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/>
+                        </svg>
+                    </div>
+                    <h3>No hay contactos</h3>
+                    <p>Carga un archivo CSV o añade contactos manualmente</p>
+                </div>
+            </div>
+
+            <!-- WhatsApp Tab -->
+            <div id="whatsappTab" class="table-container fade-in" style="display: none;">
+                <div class="table-header">
+                    <div class="table-title">
+                        <h3>Enviar por WhatsApp</h3>
+                        <span class="badge">Invitación Masiva</span>
+                    </div>
+                </div>
+                <div style="padding: 2rem;">
+                    <div class="card" style="max-width: 600px; margin: 0 auto;">
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                            Selecciona los contactos y envía invitaciones personalizadas a través de WhatsApp Web. 
+                            Cada mensaje se abrirá en una nueva pestaña lista para enviar.
+                        </p>
+                        
+                        <div class="progress-container" id="whatsappProgress" style="display: none;">
+                            <div class="progress-header">
+                                <span class="progress-label">Enviando invitaciones...</span>
+                                <span class="progress-value"><span id="progressCurrent">0</span> / <span id="progressTotal">0</span></span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="btn-group" style="margin-top: 1.5rem;">
+                            <button class="btn btn-success btn-block" onclick="startWhatsAppInvite()">
+                                <svg fill="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                </svg>
+                                Iniciar Envío por WhatsApp
+                            </button>
+                        </div>
+
+                        <div style="margin-top: 2rem; padding: 1rem; background: var(--bg-secondary); border-radius: 10px;">
+                            <h4 style="font-size: 0.875rem; margin-bottom: 0.75rem; color: var(--accent-orange);">⚠️ Importante</h4>
+                            <ul style="font-size: 0.8rem; color: var(--text-muted); padding-left: 1.25rem; line-height: 1.6;">
+                                <li>Debes tener WhatsApp Web abierto en tu navegador</li>
+                                <li>Se abrirá una pestaña por cada contacto</li>
+                                <li>Puedes configurar el intervalo entre envíos</li>
+                                <li>Los contactos deben tener el código de país (+34, +1, etc.)</li>
+                            </ul>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 1.5rem;">
+                            <label for="sendInterval">Intervalo entre envíos (segundos)</label>
+                            <input type="number" id="sendInterval" value="3" min="1" max="60">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telegram Tab -->
+            <div id="telegramTab" class="table-container fade-in" style="display: none;">
+                <div class="table-header">
+                    <div class="table-title">
+                        <h3>Compartir Enlace de Telegram</h3>
+                        <span class="badge">Copia Rápida</span>
+                    </div>
+                </div>
+                <div style="padding: 2rem;">
+                    <div class="card" style="max-width: 600px; margin: 0 auto;">
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                            Genera mensajes personalizados listos para copiar y compartir en cualquier plataforma.
+                        </p>
+
+                        <div class="form-group">
+                            <label>Enlace del grupo:</label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="copyLink" readonly style="flex: 1;">
+                                <button class="btn btn-primary" onclick="copyGroupLink()">
+                                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18" height="18">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                    Copiar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 1.5rem;">
+                            <label>Mensaje formateado para copiar:</label>
+                            <textarea id="formattedMessage" rows="6" readonly></textarea>
+                            <button class="btn btn-secondary btn-block" style="margin-top: 0.75rem;" onclick="copyFormattedMessage()">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18" height="18">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                </svg>
+                                Copiar Mensaje Completo
+                            </button>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;">
+                            <a href="#" id="shareWhatsApp" class="btn btn-success" target="_blank" onclick="shareViaWhatsApp(event)">
+                                <svg fill="currentColor" viewBox="0 0 24 24" width="18" height="18">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                                </svg>
+                                Compartir en WhatsApp
+                            </a>
+                            <a href="#" id="shareTelegram" class="btn btn-primary" target="_blank" onclick="shareViaTelegram(event)">
+                                <svg fill="currentColor" viewBox="0 0 24 24" width="18" height="18">
+                                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.442-.752-.244-1.349-.374-1.297-.789.027-.216.324-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.141.121.099.154.232.17.325.015.093.034.306.019.472z"/>
+                                </svg>
+                                Compartir en Telegram
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Tab -->
+            <div id="statsTab" class="table-container fade-in" style="display: none;">
+                <div class="table-header">
+                    <div class="table-title">
+                        <h3>Estadísticas de Envío</h3>
+                        <span class="badge">Resumen</span>
+                    </div>
+                </div>
+                <div style="padding: 2rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div class="card" style="text-align: center;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-cyan); font-family: 'JetBrains Mono';" id="statTotal">0</div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted);">Total Contactos</div>
+                        </div>
+                        <div class="card" style="text-align: center;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-green); font-family: 'JetBrains Mono';" id="statSent">0</div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted);">Enviados</div>
+                        </div>
+                        <div class="card" style="text-align: center;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-orange); font-family: 'JetBrains Mono';" id="statPending">0</div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted);">Pendientes</div>
+                        </div>
+                        <div class="card" style="text-align: center;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-red); font-family: 'JetBrains Mono';" id="statFailed">0</div>
+                            <div style="font-size: 0.875rem; color: var(--text-muted);">Fallidos</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4 style="margin-bottom: 1rem;">Progreso de Envío</h4>
+                        <div class="progress-container">
+                            <div class="progress-header">
+                                <span class="progress-label">Completado</span>
+                                <span class="progress-value" id="statPercentage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="statProgressFill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Contact Modal -->
+    <div class="modal-overlay" id="addContactModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Añadir Contacto</h3>
+                <button class="modal-close" onclick="closeModal('addContactModal')">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newContactName">Nombre</label>
+                    <input type="text" id="newContactName" placeholder="Nombre del contacto">
+                </div>
+                <div class="form-group">
+                    <label for="newContactPhone">Teléfono</label>
+                    <input type="text" id="newContactPhone" placeholder="+34612345678">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addContactModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveNewContact()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // State
+        let contacts = [];
+        let selectedContacts = new Set();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            setupFileUpload();
+            setupMessagePreview();
+            updateUI();
+        });
+
+        // Storage
+        function saveToStorage() {
+            const data = {
+                contacts,
+                groupName: document.getElementById('groupName').value,
+                groupLink: document.getElementById('groupLink').value,
+                groupDescription: document.getElementById('groupDescription').value,
+                messageTemplate: document.getElementById('messageTemplate').value
+            };
+            localStorage.setItem('telegramInviter', JSON.stringify(data));
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('telegramInviter');
+            if (saved) {
+                const data = JSON.parse(saved);
+                contacts = data.contacts || [];
+                document.getElementById('groupName').value = data.groupName || '';
+                document.getElementById('groupLink').value = data.groupLink || '';
+                document.getElementById('groupDescription').value = data.groupDescription || '';
+                document.getElementById('messageTemplate').value = data.messageTemplate || document.getElementById('messageTemplate').value;
+            }
+        }
+
+        // File Upload
+        function setupFileUpload() {
+            const fileUpload = document.getElementById('fileUpload');
+            const fileInput = document.getElementById('csvFile');
+
+            fileUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUpload.classList.add('dragover');
+            });
+
+            fileUpload.addEventListener('dragleave', () => {
+                fileUpload.classList.remove('dragover');
+            });
+
+            fileUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUpload.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file) processFile(file);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) processFile(file);
+            });
+        }
+
+        function processFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/).filter(line => line.trim());
+                
+                let imported = 0;
+                lines.forEach((line, index) => {
+                    // Skip header if present
+                    if (index === 0 && (line.toLowerCase().includes('nombre') || line.toLowerCase().includes('name'))) {
+                        return;
+                    }
+
+                    const parts = line.split(/[,;\t]/);
+                    if (parts.length >= 2) {
+                        const name = parts[0].trim();
+                        const phone = parts[1].trim().replace(/[^\d+]/g, '');
+                        
+                        if (name && phone) {
+                            contacts.push({
+                                id: Date.now() + Math.random(),
+                                name,
+                                phone,
+                                status: 'pending'
+                            });
+                            imported++;
+                        }
+                    } else if (parts.length === 1) {
+                        const phone = parts[0].trim().replace(/[^\d+]/g, '');
+                        if (phone) {
+                            contacts.push({
+                                id: Date.now() + Math.random(),
+                                name: 'Sin nombre',
+                                phone,
+                                status: 'pending'
+                            });
+                            imported++;
+                        }
+                    }
+                });
+
+                showToast(`${imported} contactos importados correctamente`, 'success');
+                updateUI();
+                saveToStorage();
+            };
+            reader.readAsText(file);
+        }
+
+        // Message Preview
+        function setupMessagePreview() {
+            const inputs = ['groupName', 'groupLink', 'messageTemplate'];
+            inputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', updateMessagePreview);
+            });
+            updateMessagePreview();
+        }
+
+        function updateMessagePreview() {
+            const template = document.getElementById('messageTemplate').value;
+            const groupName = document.getElementById('groupName').value || 'Mi Grupo';
+            const groupLink = document.getElementById('groupLink').value || 'https://t.me/+xxxxx';
+            
+            let preview = template
+                .replace(/{nombre}/g, 'Juan')
+                .replace(/{grupo}/g, groupName)
+                .replace(/{enlace}/g, groupLink);
+            
+            document.getElementById('messagePreview').textContent = preview;
+            document.getElementById('copyLink').value = groupLink;
+            document.getElementById('formattedMessage').value = preview;
+            
+            saveToStorage();
+        }
+
+        // UI Updates
+        function updateUI() {
+            updateContactsTable();
+            updateStats();
+        }
+
+        function updateContactsTable() {
+            const tbody = document.getElementById('contactsBody');
+            const emptyState = document.getElementById('emptyState');
+            const badge = document.getElementById('contactsBadge');
+
+            if (contacts.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+                tbody.innerHTML = contacts.map(contact => `
+                    <tr>
+                        <td class="checkbox-cell">
+                            <input type="checkbox" ${selectedContacts.has(contact.id) ? 'checked' : ''} 
+                                   onchange="toggleContact(${contact.id})">
+                        </td>
+                        <td>${escapeHtml(contact.name)}</td>
+                        <td>${escapeHtml(contact.phone)}</td>
+                        <td>
+                            <span class="status status-${contact.status}">
+                                <span class="status-dot"></span>
+                                ${getStatusLabel(contact.status)}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="action-btn" onclick="sendToContact(${contact.id})" title="Enviar">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                </svg>
+                            </button>
+                            <button class="action-btn" onclick="deleteContact(${contact.id})" title="Eliminar">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            badge.textContent = `${contacts.length} contactos`;
+        }
+
+        function updateStats() {
+            const total = contacts.length;
+            const sent = contacts.filter(c => c.status === 'sent').length;
+            const pending = contacts.filter(c => c.status === 'pending').length;
+            const failed = contacts.filter(c => c.status === 'failed').length;
+            const percentage = total > 0 ? Math.round((sent / total) * 100) : 0;
+
+            document.getElementById('totalContacts').textContent = total;
+            document.getElementById('sentCount').textContent = sent;
+            document.getElementById('pendingCount').textContent = pending;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statSent').textContent = sent;
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statFailed').textContent = failed;
+            document.getElementById('statPercentage').textContent = percentage + '%';
+            document.getElementById('statProgressFill').style.width = percentage + '%';
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                pending: 'Pendiente',
+                sent: 'Enviado',
+                failed: 'Fallido'
+            };
+            return labels[status] || status;
+        }
+
+        // Contact Actions
+        function toggleContact(id) {
+            if (selectedContacts.has(id)) {
+                selectedContacts.delete(id);
+            } else {
+                selectedContacts.add(id);
+            }
+        }
+
+        function toggleSelectAll() {
+            const checkbox = document.getElementById('selectAllCheckbox');
+            if (checkbox.checked) {
+                contacts.forEach(c => selectedContacts.add(c.id));
+            } else {
+                selectedContacts.clear();
+            }
+            updateContactsTable();
+        }
+
+        function selectAll() {
+            contacts.forEach(c => selectedContacts.add(c.id));
+            document.getElementById('selectAllCheckbox').checked = true;
+            updateContactsTable();
+        }
+
+        function deleteSelected() {
+            if (selectedContacts.size === 0) {
+                showToast('Selecciona al menos un contacto', 'error');
+                return;
+            }
+            contacts = contacts.filter(c => !selectedContacts.has(c.id));
+            selectedContacts.clear();
+            updateUI();
+            saveToStorage();
+            showToast('Contactos eliminados', 'success');
+        }
+
+        function deleteContact(id) {
+            contacts = contacts.filter(c => c.id !== id);
+            selectedContacts.delete(id);
+            updateUI();
+            saveToStorage();
+        }
+
+        function addManualContact() {
+            document.getElementById('addContactModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function saveNewContact() {
+            const name = document.getElementById('newContactName').value.trim();
+            const phone = document.getElementById('newContactPhone').value.trim().replace(/[^\d+]/g, '');
+
+            if (!name || !phone) {
+                showToast('Completa todos los campos', 'error');
+                return;
+            }
+
+            contacts.push({
+                id: Date.now(),
+                name,
+                phone,
+                status: 'pending'
+            });
+
+            document.getElementById('newContactName').value = '';
+            document.getElementById('newContactPhone').value = '';
+            closeModal('addContactModal');
+            updateUI();
+            saveToStorage();
+            showToast('Contacto añadido correctamente', 'success');
+        }
+
+        // Sending Functions
+        function getPersonalizedMessage(contact) {
+            const template = document.getElementById('messageTemplate').value;
+            const groupName = document.getElementById('groupName').value || 'Mi Grupo';
+            const groupLink = document.getElementById('groupLink').value || '';
+
+            return template
+                .replace(/{nombre}/g, contact.name)
+                .replace(/{grupo}/g, groupName)
+                .replace(/{enlace}/g, groupLink);
+        }
+
+        function sendToContact(id) {
+            const contact = contacts.find(c => c.id === id);
+            if (!contact) return;
+
+            const message = getPersonalizedMessage(contact);
+            const phone = contact.phone.replace(/[^\d]/g, '');
+            const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            
+            window.open(url, '_blank');
+            contact.status = 'sent';
+            updateUI();
+            saveToStorage();
+        }
+
+        async function startWhatsAppInvite() {
+            const pendingContacts = contacts.filter(c => c.status === 'pending');
+            
+            if (pendingContacts.length === 0) {
+                showToast('No hay contactos pendientes', 'error');
+                return;
+            }
+
+            const interval = parseInt(document.getElementById('sendInterval').value) * 1000 || 3000;
+            const progressContainer = document.getElementById('whatsappProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressCurrent = document.getElementById('progressCurrent');
+            const progressTotal = document.getElementById('progressTotal');
+
+            progressContainer.style.display = 'block';
+            progressTotal.textContent = pendingContacts.length;
+
+            for (let i = 0; i < pendingContacts.length; i++) {
+                const contact = pendingContacts[i];
+                const message = getPersonalizedMessage(contact);
+                const phone = contact.phone.replace(/[^\d]/g, '');
+                const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+                
+                window.open(url, '_blank');
+                contact.status = 'sent';
+                
+                progressCurrent.textContent = i + 1;
+                progressFill.style.width = ((i + 1) / pendingContacts.length * 100) + '%';
+                
+                updateUI();
+                saveToStorage();
+
+                if (i < pendingContacts.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, interval));
+                }
+            }
+
+            showToast('Todos los mensajes han sido enviados', 'success');
+        }
+
+        // Share Functions
+        function shareViaWhatsApp(e) {
+            e.preventDefault();
+            const message = document.getElementById('formattedMessage').value;
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function shareViaTelegram(e) {
+            e.preventDefault();
+            const message = document.getElementById('formattedMessage').value;
+            const url = `https://t.me/share/url?url=${encodeURIComponent(document.getElementById('groupLink').value)}&text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function copyGroupLink() {
+            const link = document.getElementById('copyLink').value;
+            navigator.clipboard.writeText(link);
+            showToast('Enlace copiado al portapapeles', 'success');
+        }
+
+        function copyFormattedMessage() {
+            const message = document.getElementById('formattedMessage').value;
+            navigator.clipboard.writeText(message);
+            showToast('Mensaje copiado al portapapeles', 'success');
+        }
+
+        // Export Functions
+        function exportContacts() {
+            if (contacts.length === 0) {
+                showToast('No hay contactos para exportar', 'error');
+                return;
+            }
+
+            const csv = 'Nombre,Teléfono,Estado\n' + 
+                contacts.map(c => `${c.name},${c.phone},${c.status}`).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'contactos_telegram.csv';
+            link.click();
+            
+            showToast('Contactos exportados correctamente', 'success');
+        }
+
+        function downloadTemplate() {
+            const csv = 'nombre,telefono\nJuan García,+34612345678\nMaría López,+34698765432';
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'plantilla_contactos.csv';
+            link.click();
+        }
+
+        // Tabs
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.table-container').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').style.display = 'flex';
+            
+            // Add active class to clicked button
+            event.currentTarget.classList.add('active');
+
+            // Update message preview when switching to telegram tab
+            if (tabName === 'telegram') {
+                updateMessagePreview();
+            }
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <svg class="toast-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    ${type === 'success' 
+                        ? '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+                        : '<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>'}
+                </svg>
+                <span class="toast-message">${message}</span>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Utilities
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
